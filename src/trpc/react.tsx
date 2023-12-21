@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { type AppRouter } from '@/server/api/root'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-// eslint-disable-next-line camelcase
 import { loggerLink, unstable_httpBatchStreamLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
 
@@ -15,7 +14,22 @@ export function TRPCReactProvider(props: {
   children: React.ReactNode
   headers: Headers
 }) {
-  const [queryClient] = useState(() => new QueryClient())
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+            staleTime: 1000 * 60, // 1 minute
+            cacheTime: Infinity, // never invalidate
+            refetchOnWindowFocus: false,
+          },
+          mutations: {
+            retry: false,
+          },
+        },
+      }),
+  )
 
   const [trpcClient] = useState(() =>
     api.createClient({
